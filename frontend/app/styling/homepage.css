@@ -1,0 +1,40 @@
+.home-container {
+   display: flex;
+  flex-direction: column;
+  justify-content: center;      /* vertical centering */
+  align-items: center;
+  margin-top: 8rem;             /* same as mt-5 */
+  max-width: 600px;             /* make it narrower */
+  margin-left: auto;
+  margin-right: auto;           /* center horizontally */
+  border: 2px solid black;      /* black border */
+  border-radius: 10px;          /* rounded corners */
+  padding: 1.5rem;              /* padding inside the box */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* subtle shadow */
+  background-color: #fff;       /* optional: white background */
+}
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
+}
+label {
+  text-align: left;
+  display: block;
+}
+h1 {
+  margin-bottom: 1rem;
+}
+
+.nav-tabs {
+  margin-bottom: 1rem;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}

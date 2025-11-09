@@ -1,0 +1,35 @@
+/*
+ * File: app/styling/dashboard.css
+ */
+
+.tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+/* This styles the 'selected' tag button */
+.tag-btn {
+  display: flex;
+  align-items: center;
+}
+
+/* This styles the "X" on the left of the selected tag */
+.deselect-cross {
+  display: inline-block;
+  margin-right: 8px; /* Space between cross and text */
+  padding: 0 4px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* Add a little hover effect to the cross */
+.deselect-cross:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}

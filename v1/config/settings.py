@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     # API Keys
     OPENAI_API_KEY: str = Field(..., env="OPENAI_API_KEY")
     LANGSMITH_API_KEY: Optional[str] = Field(None, env="LANGSMITH_API_KEY")
+    TAVILY_API_KEY: Optional[str] = Field(None, env="TAVILY_API_KEY")
+    TAVIYLY_API_KEY: Optional[str] = Field(None, env="TAVIYLY_API_KEY")
 
     # Model Configuration
     DEFAULT_MODEL: str = Field("gpt-4.1-mini", env="DEFAULT_MODEL")
@@ -57,6 +59,10 @@ class Settings(BaseSettings):
         # Create necessary directories
         self.VECTOR_DB_PATH.mkdir(parents=True, exist_ok=True)
         self.MEMORY_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    def get_tavily_key(self) -> Optional[str]:
+        """Return whichever Tavily key env the user provided."""
+        return self.TAVILY_API_KEY or self.TAVIYLY_API_KEY
 
 
 # Singleton instance

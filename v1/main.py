@@ -47,6 +47,7 @@ from agents.blog_workflow.agent import BlogWorkflowAgent
 from agents.content_workflow.agent import ContentCreationAgent
 from agents.kafka_story.agent import KafkaStoryAgent
 from agents.multipurpose_bot.agent import MultipurposeBot
+from agents.newsroom.agent import NewsroomAgent
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
@@ -69,7 +70,7 @@ class ChatRequest(BaseModel):
     message: str
     agent_type: str = Field(
         "multipurpose",
-        description="Agent type: multipurpose | content | kafka_story | blog_workflow",
+        description="Agent type: multipurpose | content | kafka_story | blog_workflow | newsroom",
     )
     thread_id: Optional[str] = None
 
@@ -112,6 +113,24 @@ class BlogWorkflowResponse(BaseModel):
     package: Dict[str, Any]
 
 
+class NewsroomRequest(BaseModel):
+    brief: str
+    topic: Optional[str] = None
+    modalities: List[Literal["news_article", "medium", "linkedin"]] = Field(
+        default_factory=lambda: ["news_article", "medium", "linkedin"]
+    )
+    tone: Optional[str] = None
+    audience: Optional[str] = None
+    timeframe: Optional[str] = None
+    thread_id: Optional[str] = None
+
+
+class NewsroomResponse(BaseModel):
+    summary: str
+    thread_id: str
+    package: Dict[str, Any]
+
+
 # =====================
 # 🧠 AgentManager Class
 # =====================
@@ -138,6 +157,7 @@ class AgentManager:
             self.agents["content"] = ContentCreationAgent()
             self.agents["kafka_story"] = KafkaStoryAgent()
             self.agents["blog_workflow"] = BlogWorkflowAgent()
+            self.agents["newsroom"] = NewsroomAgent()
 
             # Compile LangGraph graphs for each
             for name, agent in self.agents.items():
@@ -229,6 +249,7 @@ async def root():
             "/content": "POST {'brief': 'New product launch', 'primary_asset': 'blog'}",
             "/blog-workflow": "POST {'brief': 'Remote work blog'}",
             "/kafka-story": "POST {'message': 'A man wakes up as a spreadsheet'}",
+            "/newsroom": "POST {'brief': 'EV battery policies', 'modalities': ['news_article','linkedin']}",
         },
     }
 
@@ -398,6 +419,45 @@ async def run_blog_workflow(request: BlogWorkflowRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/newsroom", response_model=NewsroomResponse)
+async def generate_newsroom_assets(request: NewsroomRequest):
+    """
+    📰 Newsroom workflow: research + multi-modality drafting
+
+    Example:
+    --------
+    curl -X POST http://localhost:8000/newsroom -H "Content-Type: application/json" \\
+    -d '{"brief": "Summarize EV battery policy shifts", "modalities": ["news_article","linkedin"]}'
+    """
+    try:
+        result = await agent_manager.process_message(
+            message=request.brief,
+            agent_type="newsroom",
+            thread_id=request.thread_id,
+            topic=request.topic,
+            modalities=request.modalities,
+            tone=request.tone,
+            audience=request.audience,
+            timeframe=request.timeframe,
+        )
+
+        agent_result = result["result"]
+        package = agent_result.get("package") or agent_result.get("metadata", {}).get(
+            "package"
+        )
+        summary = (
+            agent_result.get("response") or agent_result.get("messages", [])[-1].content
+        )
+
+        return NewsroomResponse(
+            summary=summary,
+            thread_id=result["thread_id"],
+            package=package,
+        )
+    except Exception as e:
+        logger.error(f"💥 Error in /newsroom: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # =======================
 # 🌀 Kafka Story Endpoint
 # =======================
@@ -438,7 +498,7 @@ async def kafka_story_endpoint(request: ChatRequest):
 async def cli_interface():
     print("\n🎛️ LangGraph Agent System CLI\n" + "=" * 50)
     print("🧠 Available agents:")
-    for a in ["multipurpose", "content", "blog_workflow", "kafka_story"]:
+    for a in ["multipurpose", "content", "blog_workflow", "newsroom", "kafka_story"]:
         print(f"   • {a}")
     print("\n✨ Commands: 'switch <agent>' | 'new' | 'exit'\n")
 

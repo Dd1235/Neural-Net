@@ -70,6 +70,22 @@ class BlogWorkflowState(BaseState):
     package: Optional[Dict[str, Any]]
 
 
+class NewsroomState(BaseState):
+    """State for news article + modality package generation"""
+
+    brief: str
+    topic: Optional[str]
+    modalities: List[str]
+    tone: Optional[str]
+    audience: Optional[str]
+    timeframe: Optional[str]
+    research_queries: Optional[List[str]]
+    research_digest: Optional[str]
+    outline: Optional[str]
+    assets: Optional[Dict[str, str]]
+    package: Optional[Dict[str, Any]]
+
+
 class InputState(TypedDict):
     """Input state schema"""
 

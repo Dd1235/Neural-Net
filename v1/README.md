@@ -22,3 +22,12 @@ In main.py, go through endpoints, they have example curls to test the endpoints.
 
 Web Search works
 ![ss1](./assets/ss1.png)
+
+## Streamlit temporary frontend
+
+Interact with FastAPI endpoint through a Streamlit UI:
+
+```bash
+uvicorn main:app --reload --port 8000
+streamlit run streamlit_app.py
+```

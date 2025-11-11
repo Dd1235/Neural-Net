@@ -1,5 +1,4 @@
 import streamlit as st
-
 from ui.api_client import APIClientError, call_api
 from ui.components import render_sidebar, show_error, show_request_response
 
@@ -55,4 +54,3 @@ if submitted:
                 st.json(package)
         except APIClientError as exc:
             show_error(f"Request failed: {exc}")
-

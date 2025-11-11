@@ -17,6 +17,30 @@ class BaseState(TypedDict):
     metadata: Dict[str, Any]
 
 
+class Blogstate(BaseState):
+    """State for multi-platform branded blog generation workflow."""
+
+    brand: Optional[str]
+    prompt: str
+    modalities: List[Literal["medium", "linkedin"]]
+    word_counts: Dict[Literal["medium", "linkedin"], int]
+    original_draft: Optional[str]
+    thread_id: Optional[str]
+
+    research_context: Optional[str]  # fetched via web/Tavily
+
+    # --- GENERATION PHASE (per subagent) ---
+    medium_draft: Optional[str]  # output for Medium
+    linkedin_draft: Optional[str]  # output for LinkedIn
+    hero_image_prompt: Optional[str]
+    hero_image_url: Optional[str]
+
+    # --- PACKAGING PHASE ---
+    package: Optional[
+        Dict[str, Any]
+    ]  # {"medium": "...", "linkedin": "...", "hero_image_url": "..."}
+
+
 class RAGState(BaseState):
     """State for RAG operations"""
 

@@ -1,25 +1,25 @@
 """
-🌐 Main Application for LangGraph Agent System
+Main Application for LangGraph Agent System
 ================================================
 A multi-agent orchestration framework for generating:
-- Blogs & newsletters 📰
-- Creative social media assets 📣
-- General-purpose AI chat 💬
+- Blogs & newsletters
+- Creative social media assets
+- General-purpose AI chat
 
-✨ Features
+Features
 -----------
-✅ Built with FastAPI + LangGraph
-✅ Async orchestration and CLI mode
-✅ Modular agent loading and graph compilation
-✅ Health & Ping endpoints
-✅ Colorful and verbose console logging for demos 🧠
+Built with FastAPI + LangGraph
+Async orchestration and CLI mode
+Modular agent loading and graph compilation
+Health & Ping endpoints
+Verbose console logging for demos
 
 Example:
 --------
-▶️ Start server:
+Start server:
     uvicorn main:app --reload --port 8000
 
-▶️ CLI mode (interactive):
+CLI mode (interactive):
     python main.py cli
 
 Endpoints:
@@ -53,13 +53,13 @@ from pydantic import BaseModel, Field
 # === Configure Logging ===
 logging.basicConfig(
     level=logging.INFO,
-    format="🌍 %(asctime)s | %(name)s | %(levelname)s | %(message)s",
+    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
 )
 logger = logging.getLogger("main_app")
 
 
 # ============================
-# 🚀 Request & Response Models
+# Request & Response Models
 # ============================
 
 
@@ -110,6 +110,38 @@ class BlogWorkflowResponse(BaseModel):
     package: Dict[str, Any]
 
 
+# feature 1 - Generate blogs, request response
+
+
+class BlogRequest(BaseModel):
+    brand: Optional[str] = None
+    prompt: str
+    modalities: List[Literal["medium", "linkedin"]] = Field(
+        default_factory=lambda: ["medium", "linkedin"]
+    )
+    word_counts: Dict[Literal["medium", "linkedin"], int] = Field(
+        default_factory=lambda: {"medium": 600, "linkedin": 200},
+        description="Per-modality word limits",
+    )
+    original_draft: Optional[str] = Field(
+        default=None,
+        description="Optional existing draft or notes to refine and build upon.",
+    )
+    thread_id: Optional[str] = None
+
+
+class BlogResponse(BaseModel):
+    # Core outputs
+    drafts: Dict[str, str] = Field(
+        ...,
+        description="Generated text drafts per modality, e.g. {'medium': '...', 'linkedin': '...'}",
+    )
+
+    research_context: Optional[str] = None
+    hero_image_url: Optional[str] = None
+    thread_id: str  # same as in request (for linking runs)
+
+
 class NewsroomRequest(BaseModel):
     brief: str
     topic: Optional[str] = None
@@ -129,12 +161,12 @@ class NewsroomResponse(BaseModel):
 
 
 # =====================
-# 🧠 AgentManager Class
+# AgentManager Class
 # =====================
 
 
 class AgentManager:
-    """🧩 Manages all agents and orchestrates interactions."""
+    """Manages all agents and orchestrates interactions."""
 
     def __init__(self):
         self.logger = logging.getLogger("AgentManager")
@@ -144,10 +176,9 @@ class AgentManager:
     async def initialize(self):
         """Load and compile all agents"""
         if self._initialized:
-            self.logger.info("⚙️ Agents already initialized.")
+            self.logger.info("Agents already initialized.")
             return
-
-        self.logger.info("\n🔧 Initializing agents...\n")
+        self.logger.info("\nInitializing agents...\n")
         try:
             # Instantiate agents
             self.agents["multipurpose"] = MultipurposeBot()
@@ -157,15 +188,15 @@ class AgentManager:
 
             # Compile LangGraph graphs for each
             for name, agent in self.agents.items():
-                self.logger.info(f"🧩 Compiling graph for '{name}' agent...")
+                self.logger.info(f"Compiling graph for '{name}' agent...")
                 agent.compile()
-                self.logger.info(f"✅ '{name}' agent ready!\n")
+                self.logger.info(f"'{name}' agent ready!\n")
 
             self._initialized = True
-            self.logger.info("🎉 All agents initialized successfully!\n")
+            self.logger.info("All agents initialized successfully!\n")
 
         except Exception as e:
-            self.logger.error(f"💥 Initialization failed: {str(e)}")
+            self.logger.error(f"Initialization failed: {str(e)}")
             raise
 
     def get_agent(self, agent_type: str):
@@ -184,13 +215,12 @@ class AgentManager:
         """Route message to the specified agent"""
         agent = self.get_agent(agent_type)
         thread_id = thread_id or str(uuid.uuid4())
-
-        self.logger.info(f"\n💬 [Incoming] ({agent_type}) → {message}")
+        self.logger.info(f"\n[Incoming] ({agent_type}) → {message}")
         input_data = {"messages": [HumanMessage(content=message)], **kwargs}
 
-        self.logger.info("🧠 Invoking agent...")
+        self.logger.info("Invoking agent...")
         result = await agent.ainvoke(input_data, thread_id=thread_id)
-        self.logger.info("✨ Agent finished processing.\n")
+        self.logger.info("Agent finished processing.\n")
 
         return {"result": result, "thread_id": thread_id, "agent_type": agent_type}
 
@@ -199,20 +229,20 @@ agent_manager = AgentManager()
 
 
 # ==========================
-# 🌱 FastAPI App Definition
+# FastAPI App Definition
 # ==========================
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("\n🚀 Starting application...\n")
+    logger.info("\nStarting application...\n")
     await agent_manager.initialize()
     yield
-    logger.info("\n🛑 Application shutting down...\n")
+    logger.info("\nApplication shutting down...\n")
 
 
 app = FastAPI(
-    title="LangGraph Agent System 🧩",
+    title="LangGraph Agent System",
     description="Multi-agent orchestration for content creation, stories, and chat",
     version="1.2.0",
     lifespan=lifespan,
@@ -227,7 +257,7 @@ app.add_middleware(
 )
 
 # =======================
-# 📡 Root & Health Routes
+# Root & Health Routes
 # =======================
 
 
@@ -236,9 +266,9 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    """🌍 Welcome Endpoint"""
+    """Welcome Endpoint"""
     return {
-        "message": "LangGraph Multi-Agent System 🌟",
+        "message": "LangGraph Multi-Agent System",
         "available_agents": list(agent_manager.agents.keys()),
         "example_endpoints": {
             "/chat": "POST {'message': 'Hello!', 'agent_type': 'multipurpose'}",
@@ -254,9 +284,9 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """💓 Check full system health"""
+    """Check full system health"""
     return {
-        "status": "healthy 🩺",
+        "status": "healthy",
         "agents_initialized": agent_manager._initialized,
         "agents_count": len(agent_manager.agents),
     }
@@ -267,8 +297,8 @@ async def health_check():
 
 @app.get("/ping")
 async def ping():
-    """🏓 Simple ping endpoint"""
-    return {"ping": "pong 🏓"}
+    """Simple ping endpoint"""
+    return {"ping": "pong"}
 
 
 # curl -X GET http://localhost:8000/agents
@@ -276,7 +306,7 @@ async def ping():
 
 @app.get("/agents")
 async def list_agents():
-    """🔍 List all initialized agents"""
+    """List all initialized agents"""
     return {
         "agents": {
             name: {
@@ -290,14 +320,14 @@ async def list_agents():
 
 
 # =======================
-# 💬 Chat Endpoint
+# Chat Endpoint
 # =======================
 
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """
-    💬 Chat with a specific agent
+    Chat with a specific agent
 
     Example:
     --------
@@ -323,19 +353,19 @@ async def chat(request: ChatRequest):
         )
 
     except Exception as e:
-        logger.error(f"💥 Error in /chat: {str(e)}")
+        logger.error(f"Error in /chat: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # =======================
-# 📰 Content Workflow
+# Content Workflow
 # =======================
 
 
 @app.post("/content", response_model=ContentResponse)
 async def generate_content(request: ContentRequest):
     """
-    🧩 Multi-Agent Content Creation Workflow
+    Multi-Agent Content Creation Workflow
 
     Example:
     --------
@@ -367,19 +397,19 @@ async def generate_content(request: ContentRequest):
         )
 
     except Exception as e:
-        logger.error(f"💥 Error in /content: {str(e)}")
+        logger.error(f"Error in /content: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # =======================
-# 🧱 Blog Workflow
+# Blog Workflow
 # =======================
 
 
 @app.post("/blog-workflow", response_model=BlogWorkflowResponse)
 async def run_blog_workflow(request: BlogWorkflowRequest):
     """
-    🧱 Walkthrough-style Blog Generation Workflow
+    Walkthrough-style Blog Generation Workflow
 
     Example:
     --------
@@ -410,14 +440,14 @@ async def run_blog_workflow(request: BlogWorkflowRequest):
         )
 
     except Exception as e:
-        logger.error(f"💥 Error in /blog-workflow: {str(e)}")
+        logger.error(f"Error in /blog-workflow: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/newsroom", response_model=NewsroomResponse)
 async def generate_newsroom_assets(request: NewsroomRequest):
     """
-    📰 Newsroom workflow: research + multi-modality drafting
+    Newsroom workflow: research 
 
     Example:
     --------
@@ -450,21 +480,42 @@ async def generate_newsroom_assets(request: NewsroomRequest):
             package=package,
         )
     except Exception as e:
-        logger.error(f"💥 Error in /newsroom: {str(e)}")
+        logger.error(f"Error in /newsroom: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/generate_blog", response_model=BlogResponse)
+async def generate_blog(request: BlogRequest):
+    """
+    Dummy blog generation endpoint — later replace with real LangGraph agent.
+    """
+
+    # Dummy outputs for now
+    drafts = {}
+    for modality in request.modalities:
+        drafts[modality] = (
+            f"[{modality.upper()} DRAFT] Generated content for: '{request.prompt}' ({request.word_counts.get(modality, 200)} words)"
+        )
+
+    response = BlogResponse(
+        drafts=drafts,
+        hero_image_url="https://pollinations.ai/p/example-image",
+        thread_id=request.thread_id or "session-xyz123",
+    )
+    return response
+
+
 # =======================
-# 💻 CLI Interface
+# CLI Interface
 # =======================
 
 
 async def cli_interface():
-    print("\n🎛️ LangGraph Agent System CLI\n" + "=" * 50)
-    print("🧠 Available agents:")
+    print("\nLangGraph Agent System CLI\n" + "=" * 50)
+    print("Available agents:")
     for a in ["multipurpose", "content", "blog_workflow", "newsroom"]:
         print(f"   • {a}")
-    print("\n✨ Commands: 'switch <agent>' | 'new' | 'exit'\n")
+    print("\nCommands: 'switch <agent>' | 'new' | 'exit'\n")
 
     await agent_manager.initialize()
 
@@ -475,23 +526,23 @@ async def cli_interface():
         try:
             user_input = input(f"\n[{current_agent}] > ").strip()
             if user_input.lower() == "exit":
-                print("\n👋 Goodbye!\n")
+                print("\nGoodbye!\n")
                 break
             if user_input.lower().startswith("switch "):
                 new_agent = user_input[7:].strip()
                 if new_agent in agent_manager.agents:
                     current_agent = new_agent
                     thread_id = str(uuid.uuid4())
-                    print(f"✅ Switched to '{current_agent}' agent.\n")
+                    print(f"Switched to '{current_agent}' agent.\n")
                 else:
-                    print(f"❌ Unknown agent: {new_agent}")
+                    print(f"Unknown agent: {new_agent}")
                 continue
             if user_input.lower() == "new":
                 thread_id = str(uuid.uuid4())
-                print("🌱 Started a new thread.\n")
+                print("Started a new thread.\n")
                 continue
 
-            print("\n💭 Processing...\n")
+            print("\nProcessing...\n")
             result = await agent_manager.process_message(
                 message=user_input,
                 agent_type=current_agent,
@@ -504,21 +555,21 @@ async def cli_interface():
                 or agent_result.get("messages", [])[-1].content
             )
 
-            print("\n🤖 Response:\n" + "-" * 50)
+            print("\nResponse:\n" + "-" * 50)
             print(response)
             print("-" * 50)
 
             if "metadata" in agent_result and agent_result["metadata"]:
-                print("\n📊 Metadata:", json.dumps(agent_result["metadata"], indent=2))
+                print("\nMetadata:", json.dumps(agent_result["metadata"], indent=2))
 
         except KeyboardInterrupt:
-            print("\n⏹ Interrupted. Type 'exit' to quit.")
+            print("\nInterrupted. Type 'exit' to quit.")
         except Exception as e:
-            print(f"\n💥 Error: {str(e)}")
+            print(f"\nError: {str(e)}")
 
 
 # =======================
-# 🏁 Main Entry Point
+# Main Entry Point
 # =======================
 
 if __name__ == "__main__":

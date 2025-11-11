@@ -4,7 +4,6 @@
 A multi-agent orchestration framework for generating:
 - Blogs & newsletters 📰
 - Creative social media assets 📣
-- Kafka-style surreal stories 🌀
 - General-purpose AI chat 💬
 
 ✨ Features
@@ -28,7 +27,6 @@ Endpoints:
 /chat          → Chat with any agent
 /content       → Multi-channel content generation
 /blog-workflow → Full blog creation walkthrough
-/kafka-story   → Kafka-esque short story generation
 /agents        → List loaded agents
 /health, /ping → Health checks
 
@@ -45,7 +43,6 @@ from typing import Any, Dict, List, Literal, Optional
 # === Import your agents ===
 from agents.blog_workflow.agent import BlogWorkflowAgent
 from agents.content_workflow.agent import ContentCreationAgent
-from agents.kafka_story.agent import KafkaStoryAgent
 from agents.multipurpose_bot.agent import MultipurposeBot
 from agents.newsroom.agent import NewsroomAgent
 from fastapi import FastAPI, HTTPException
@@ -70,7 +67,7 @@ class ChatRequest(BaseModel):
     message: str
     agent_type: str = Field(
         "multipurpose",
-        description="Agent type: multipurpose | content | kafka_story | blog_workflow | newsroom",
+        description="Agent type: multipurpose | content | blog_workflow | newsroom",
     )
     thread_id: Optional[str] = None
 
@@ -155,7 +152,6 @@ class AgentManager:
             # Instantiate agents
             self.agents["multipurpose"] = MultipurposeBot()
             self.agents["content"] = ContentCreationAgent()
-            self.agents["kafka_story"] = KafkaStoryAgent()
             self.agents["blog_workflow"] = BlogWorkflowAgent()
             self.agents["newsroom"] = NewsroomAgent()
 
@@ -248,7 +244,6 @@ async def root():
             "/chat": "POST {'message': 'Hello!', 'agent_type': 'multipurpose'}",
             "/content": "POST {'brief': 'New product launch', 'primary_asset': 'blog'}",
             "/blog-workflow": "POST {'brief': 'Remote work blog'}",
-            "/kafka-story": "POST {'message': 'A man wakes up as a spreadsheet'}",
             "/newsroom": "POST {'brief': 'EV battery policies', 'modalities': ['news_article','linkedin']}",
         },
     }
@@ -458,37 +453,6 @@ async def generate_newsroom_assets(request: NewsroomRequest):
         logger.error(f"💥 Error in /newsroom: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# =======================
-# 🌀 Kafka Story Endpoint
-# =======================
-
-
-@app.post("/kafka-story")
-async def kafka_story_endpoint(request: ChatRequest):
-    """
-    🌀 Generate a Kafka-style surreal short story
-
-    Example:
-    --------
-    curl -X POST http://localhost:8000/kafka-story -H "Content-Type: application/json" \
-    -d '{"message": "A man becomes a spreadsheet"}'
-    """
-    try:
-        result = await agent_manager.process_message(
-            message=request.message,
-            agent_type="kafka_story",
-            thread_id=request.thread_id,
-        )
-        agent_result = result["result"]
-        return {
-            "response": agent_result.get("response", ""),
-            "metadata": agent_result.get("metadata", {}),
-        }
-
-    except Exception as e:
-        logger.error(f"💥 Error in /kafka-story: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 
 # =======================
 # 💻 CLI Interface
@@ -498,7 +462,7 @@ async def kafka_story_endpoint(request: ChatRequest):
 async def cli_interface():
     print("\n🎛️ LangGraph Agent System CLI\n" + "=" * 50)
     print("🧠 Available agents:")
-    for a in ["multipurpose", "content", "blog_workflow", "newsroom", "kafka_story"]:
+    for a in ["multipurpose", "content", "blog_workflow", "newsroom"]:
         print(f"   • {a}")
     print("\n✨ Commands: 'switch <agent>' | 'new' | 'exit'\n")
 

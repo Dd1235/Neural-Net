@@ -1,3 +1,7 @@
+Don't bother with the chat, content, kafka story endpoints
+I just made them for learning and experimenting.
+Backend is going to be stateless monolithic.
+
 1. **Create virtual environment**
 
 ```bash

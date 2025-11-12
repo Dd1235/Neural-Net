@@ -46,8 +46,19 @@ class BlogState(BaseModel):
 # -------------------------------
 # Base Local Model (Open-source)
 # -------------------------------
-model_name = "mistralai/Mistral-7B-Instruct-v0.2"  # pick any open model you’ve downloaded or can access
-llm = pipeline("text-generation", model=model_name, torch_dtype="auto", device_map="auto")
+model_name = "google/flan-t5-base"
+llm = pipeline("text2text-generation", model=model_name, torch_dtype="auto", device_map="auto")
+
+
+# Conditional routing
+def route_after_compliance(state: BlogState) -> str:
+    if state.revision_count >= 1:  # prevent infinite loop
+        return "repurpose_assets"
+    text = (state.compliance_report or "").lower()
+    if "revise" in text or "flag" in text:
+        return "editor_feedback"
+    return "repurpose_assets"
+
 
 
 def generate(prompt: str, max_tokens=512) -> str:

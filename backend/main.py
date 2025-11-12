@@ -23,5 +23,24 @@ def read_root():
 @app.post("/generate-blog")
 async def generate_blog(request: Request):
     data = await request.json()
-    topic = data.get("topic", "")
-    return {"generated_blog": f"This is a sample blog on {topic}."}
+    prompt = data.get("prompt", "")
+    brand_voice = data.get("brandVoice", "")
+    existing_draft = data.get("existingDraft", "")
+    modalities = data.get("modalities", [])
+    medium_wc = data.get("mediumWordCount", 0)
+    linkedin_wc = data.get("linkedinWordCount", 0)
+    thread_id = data.get("threadId", "")
+
+    # Later, replace this with LangGraph generation
+    generated_text = (
+        f"📝 Blog generated!\n\n"
+        f"**Prompt:** {prompt}\n\n"
+        f"**Brand Voice:** {brand_voice}\n\n"
+        f"**Draft:** {existing_draft or 'N/A'}\n\n"
+        f"**Modalities:** {', '.join([m['name'] for m in modalities if m['active']])}\n\n"
+        f"**Medium Word Count:** {medium_wc}\n"
+        f"**LinkedIn Word Count:** {linkedin_wc}\n"
+        f"**Thread ID:** {thread_id or 'N/A'}"
+    )
+
+    return {"generated_blog": generated_text}

@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import Sidebar from "../components/generate/Sidebar";
+import Sidebar from "../components/dashboard/Sidebar";
 import Header from "../components/generate/Header";
-import BlogWorkflowPage from "../components/generate/BlogWorkflowPage";
-import NewsRoomWorkflowPage from "../components/generate/NewsRoomWorkflowpage";
-import PlaceholderPage from "../components/generate/PlaceholderPage";
+import BlogWorkflowPage from "../components/templates/BlogWorkflowPage";
+import NewsRoomWorkflowPage from "../components/templates/NewsRoomWorkflowpage";
+import PlaceholderPage from "../components/templates/PlaceholderPage";
 
 const Dashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState("blog");

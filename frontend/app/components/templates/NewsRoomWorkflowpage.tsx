@@ -1,18 +1,18 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import InputCard from "./InputCard";
-import TextInput from "./TextInput";
-import ModalitySelector, { Modality } from "./ModalitySelector";
-import WordCountInput from "./WordCountInput";
+import InputCard from "../generate/InputCard";
+import TextInput from "../generate/TextInput";
+import ModalitySelector, { Modality } from "../generate/ModalitySelector";
+import WordCountInput from "../generate/WordCountInput";
 import { Lightbulb } from "lucide-react";
 
-const BlogWorkflowPage: React.FC = () => {
+const NewsRoomWorkflowPage: React.FC = () => {
   const [formData, setFormData] = useState({
     brandVoice:
-      "We're an eco-friendly lifestyle brand that balances science with heart. Write like a caring friend who knows sustainability, deeply.",
-    prompt: "Announce our new plastic-free shampoo bar with a focus on how it conserves water.",
+      "",
+    prompt: "",
     existingDraft:
-      "Try our new bar! It's zero-waste and lasts longer. It has no sulphates, and uses chemicals that aren't too hard on new!",
+      "",
     modalities: [
       { name: "madGum", active: true },
       { name: "drakeGo", active: false },
@@ -122,4 +122,4 @@ const BlogWorkflowPage: React.FC = () => {
   );
 };
 
-export default BlogWorkflowPage;
+export default NewsRoomWorkflowPage;

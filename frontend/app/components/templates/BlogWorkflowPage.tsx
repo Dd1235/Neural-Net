@@ -1,18 +1,19 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import InputCard from "./InputCard";
-import TextInput from "./TextInput";
-import ModalitySelector, { Modality } from "./ModalitySelector";
-import WordCountInput from "./WordCountInput";
+import InputCard from "../generate/InputCard";
+import TextInput from "../generate/TextInput";
+import ModalitySelector, { Modality } from "../generate/ModalitySelector";
+import WordCountInput from "../generate/WordCountInput";
 import { Lightbulb } from "lucide-react";
 
-const NewsRoomWorkflowPage: React.FC = () => {
+const BlogWorkflowPage: React.FC = () => {
   const [formData, setFormData] = useState({
     brandVoice:
-      "",
-    prompt: "",
+      "We're an eco-friendly lifestyle brand that balances science with heart. Write like a caring friend who knows sustainability, deeply.",
+    prompt:
+      "Announce our new plastic-free shampoo bar with a focus on how it conserves water.",
     existingDraft:
-      "",
+      "Try our new bar! It's zero-waste and lasts longer. It has no sulphates, and uses chemicals that aren't too hard on new!",
     modalities: [
       { name: "madGum", active: true },
       { name: "drakeGo", active: false },
@@ -21,6 +22,9 @@ const NewsRoomWorkflowPage: React.FC = () => {
     linkedinWordCount: 200,
     threadId: "e.g. session-abc123",
   });
+
+  const [result, setResult] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = useCallback(
     (key: keyof typeof formData, value: string | number | Modality[]) => {
@@ -38,9 +42,28 @@ const NewsRoomWorkflowPage: React.FC = () => {
     }));
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form Submitted:", formData);
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const res = await fetch(
+        process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL + "/generate-blog",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
+      const data = await res.json();
+      setResult(data.generated_blog);
+    } catch (error) {
+      console.error("Error:", error);
+      setResult("⚠️ Failed to connect to backend");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,6 +81,7 @@ const NewsRoomWorkflowPage: React.FC = () => {
         Create branded multi-platform blog posts using your agent.
       </p>
 
+      {/* --- existing UI components --- */}
       <InputCard title="Brand / Voice">
         <TextInput
           label="Define your brand persona and tone."
@@ -112,14 +136,23 @@ const NewsRoomWorkflowPage: React.FC = () => {
       <div className="mt-8">
         <button
           type="submit"
+          disabled={loading}
           className="w-full md:w-auto px-8 py-3 bg-red-600 text-white font-bold rounded-xl shadow-xl hover:bg-red-700 transition-all duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-red-500/50 flex items-center justify-center"
         >
           <Lightbulb className="w-5 h-5 mr-3" />
-          Generate Blog Assets
+          {loading ? "Generating..." : "Generate Blog Assets"}
         </button>
       </div>
+
+      {/* Result Section */}
+      {result && (
+        <div className="mt-10 bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h2 className="text-xl font-bold mb-3">Generated Blog Output:</h2>
+          <pre className="whitespace-pre-wrap text-gray-200">{result}</pre>
+        </div>
+      )}
     </form>
   );
 };
 
-export default NewsRoomWorkflowPage;
+export default BlogWorkflowPage;

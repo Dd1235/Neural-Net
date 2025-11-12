@@ -14,7 +14,7 @@ export default function SignUpForm({ setMessage }: SignUpFormProps) {
     e.preventDefault();
     try {
       // ✅ call unified Next.js API route
-      const res = await fetch("/api", {
+      const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from blog.router import router as blog_router
+from news.router import router as news_router
 app = FastAPI()
 
 # Allow frontend requests (adjust port if needed)
@@ -21,3 +22,4 @@ def read_root():
     return {"message": "Hello from FastAPI"}
 
 app.include_router(blog_router)
+app.include_router(news_router)

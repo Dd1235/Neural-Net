@@ -1,10 +1,25 @@
 "use client";
 import React, { useState, useCallback } from "react";
+// Assuming paths are correct
 import InputCard from "../generate/InputCard";
 import TextInput from "../generate/TextInput";
-import ModalitySelector, { Modality } from "../generate/ModalitySelector";
+import ModalitySelector, { Modality } from "../generate/ModalitySelector"; // Import the updated component
 import WordCountInput from "../generate/WordCountInput";
 import { Lightbulb } from "lucide-react";
+
+// Define the full list of available channels to pass to the selector
+const ALL_CHANNELS: Modality[] = [
+  { name: "medium" },
+  { name: "linkedin" },
+  { name: "twitter" },
+  { name: "facebook" },
+  { name: "threads" },
+  { name: "instagram" },
+  // Your original mock data had 'madGum' and 'drakeGo', include them here:
+  { name: "madGum" },
+  { name: "drakeGo" },
+];
+
 
 const BlogWorkflowPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -14,10 +29,11 @@ const BlogWorkflowPage: React.FC = () => {
       "Announce our new plastic-free shampoo bar with a focus on how it conserves water.",
     existingDraft:
       "Try our new bar! It's zero-waste and lasts longer. It has no sulphates, and uses chemicals that aren't too hard on new!",
+    // 💡 FIX 1: The modalities state should be an array of names (strings) for easy API submission.
     modalities: [
-      { name: "madGum", active: true },
-      { name: "drakeGo", active: false },
-    ] as Modality[],
+      "madGum", // Previously active
+      "linkedin", // Adding a channel to start with
+    ] as string[], // Now stores only the selected NAMES
     mediumWordCount: 600,
     linkedinWordCount: 200,
     threadId: "e.g. session-abc123",
@@ -27,18 +43,17 @@ const BlogWorkflowPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const handleChange = useCallback(
-    (key: keyof typeof formData, value: string | number | Modality[]) => {
+    (key: keyof typeof formData, value: string | number | string[]) => {
       setFormData((prev) => ({ ...prev, [key]: value }));
     },
     []
   );
 
-  const handleToggleModality = useCallback((name: string) => {
+  // 💡 FIX 2: Replaced handleToggleModality with a new handler
+  const handleSelectionChange = useCallback((selectedNames: string[]) => {
     setFormData((prev) => ({
       ...prev,
-      modalities: prev.modalities.map((m) =>
-        m.name === name ? { ...m, active: !m.active } : m
-      ),
+      modalities: selectedNames, // Update state with the new array of selected names
     }));
   }, []);
 
@@ -81,7 +96,7 @@ const BlogWorkflowPage: React.FC = () => {
         Create branded multi-platform blog posts using your agent.
       </p>
 
-      {/* --- existing UI components --- */}
+      {/* ... other InputCard components ... */}
       <InputCard title="Brand / Voice">
         <TextInput
           label="Define your brand persona and tone."
@@ -105,10 +120,12 @@ const BlogWorkflowPage: React.FC = () => {
           isTextArea
         />
       </InputCard>
-
+      
+      {/* 💡 FIX 3: Updated ModalitySelector usage */}
       <ModalitySelector
-        modalities={formData.modalities}
-        onToggle={handleToggleModality}
+        allChannels={ALL_CHANNELS} // Pass the full list of options
+        preSelectedNames={formData.modalities} // Pass the currently selected names
+        onSelectionChange={handleSelectionChange} // Use the new handler
       />
 
       <InputCard title="Word Counts per Modality">
@@ -123,6 +140,7 @@ const BlogWorkflowPage: React.FC = () => {
           onChange={(val) => handleChange("linkedinWordCount", val)}
         />
       </InputCard>
+      {/* ... rest of the form ... */}
 
       <InputCard title="Thread ID (optional)">
         <TextInput

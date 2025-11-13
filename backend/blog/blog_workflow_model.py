@@ -10,6 +10,7 @@ load_dotenv()
 # Initialize Groq client
 # -------------------------------
 client = Groq()  # Uses GROQ_API_KEY from environment
+research_client = Groq()  # Smaller agent for research (llama-3.1-8b-instant)
 
 def generate(prompt: str, max_tokens=512, temperature=0.7) -> str:
     """Use Groq API to generate text from prompt."""
@@ -23,6 +24,17 @@ def generate(prompt: str, max_tokens=512, temperature=0.7) -> str:
     )
     return completion.choices[0].message.content.strip()
 
+def generate_research(prompt: str, max_tokens=512, temperature=0.7) -> str:
+    """Secondary agent for topic research."""
+    completion = research_client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=temperature,
+        max_completion_tokens=max_tokens,
+        top_p=1,
+        stream=False,
+    )
+    return completion.choices[0].message.content.strip()
 
 # -------------------------------
 # State Schema
@@ -68,7 +80,6 @@ Return sections:
 
 
 def topic_research(state: BlogState) -> Dict[str, Any]:
-    """Step 2: Research credible findings for the given prompt/topic."""
     prompt = f"""
 You are a Research Strategist.
 
@@ -77,7 +88,7 @@ List 3–4 credible findings, trends, or statistics related to the topic:
 
 Each item should include a short source-style attribution.
 """
-    return {"research_notes": generate(prompt, 512)}
+    return {"research_notes": generate_research(prompt, 512)}
 
 
 def draft_blog(state: BlogState) -> Dict[str, Any]:
@@ -158,7 +169,7 @@ Revise the blog to address the feedback while preserving the brand voice.
 
 
 def repurpose_social_assets(state: BlogState) -> Dict[str, Any]:
-    """Step 6: Generate social media versions dynamically."""
+    """Generate social media versions per selected modality."""
     if not state.modalities:
         return {"social_assets": {}}
 
@@ -175,8 +186,17 @@ Create a post for **{platform}** (~{word_count} words) that:
 - Is consistent with the brand's values and history
 - Feels native to that platform
 """
-        assets[platform] = generate(prompt, 512)
-    return {"social_assets": assets}
+        generated_text = generate(prompt, 512)
+        # Key is modality name, value is generated text
+        assets[platform] = generated_text
+
+    # Optional: format as a single string to display in frontend
+    formatted_output = "\n\n".join(
+        f"### {modality}\n{text}" for modality, text in assets.items()
+    )
+
+    return {"social_assets": assets, "formatted_social_output": formatted_output}
+
 
 
 def finalize_package(state: BlogState) -> Dict[str, Any]:

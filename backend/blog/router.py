@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from .agent_blog_workflow import BlogWorkflowAgent
+import uuid
+
 # -------------------------------
 # Normalize frontend input
 # -------------------------------
@@ -15,7 +17,7 @@ DEFAULT_WORD_COUNTS = {
 def normalize_input(payload: dict) -> dict:
     """Convert frontend payload to BlogState-friendly structure, only including selected modalities."""
     selected = payload.get("modalities", [])
-    modalities = {}
+    modalities = {} 
 
     for channel in selected:
         key = f"{channel}WordCount"
@@ -42,13 +44,18 @@ async def generate_blog(request: Request):
         payload = await request.json()
         print("Received payload:", payload)  # Debug log
 
+        thread_id = str(uuid.uuid4())
+        payload["threadId"] = thread_id
+
         normalized_payload = normalize_input(payload)
+        normalized_payload["threadId"] = payload["threadId"]
         print("Normalized payload:", normalized_payload)  # Debug log
 
         result = await agent.ainvoke(normalized_payload)
 
         return {
             "status": "success",
+            "threadId": thread_id,
             "generated_blog": result.get("data", {}).get("blog_draft", "No draft generated"),
             "received_data": normalized_payload
         }

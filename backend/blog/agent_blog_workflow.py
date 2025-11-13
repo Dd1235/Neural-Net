@@ -31,14 +31,19 @@ class BlogWorkflowAgent:
             app = graph.compile()
             result = app.invoke(state)
 
-            # ✅ Convert to dict if needed (for JSON serialization)
-            if hasattr(result, "dict"):
-                result = result.dict()
+            formatted_output = ""
+            if "social_assets" in result and result["social_assets"]:
+                for modality in state.modalities.keys():  # Only include selected modalities
+                    content = result["social_assets"].get(modality, "")
+                    formatted_output += f"### {modality}\n{content}\n\n"
 
-            return {
-                "status": "success",
-                "data": result
-            }
+                return {
+                    "status": "success",
+                    "data": {
+                    "formatted_blog": formatted_output.strip(),  # ready for frontend
+                    "raw_result": result  # optional: full workflow output
+                    }
+                }
 
         except Exception as e:
             return {

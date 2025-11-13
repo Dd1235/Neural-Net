@@ -13,6 +13,7 @@
     "bcrpyt": "^2.0.0",
     "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.8",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.553.0",
     "next": "16.0.1",
     "prisma": "^6.19.0",

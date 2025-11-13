@@ -74,6 +74,21 @@ const BlogWorkflowPage: React.FC = () => {
       const data = await res.json();
       console.log("Full JSON response from backend:", data); // 👈 log the entire JSON
       setResult(data.generated_blog); // fallback if key doesn't exist
+      try {
+        await fetch("/api/save-blog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+        threadId: data.threadId,       // from backend
+        result: data.generated_blog,   // the generated blog text
+        url: "",                        // optional, or you can include if any
+      }),
+      credentials: "include",          // include cookies for auth
+      });
+      console.log("Saved blog to DB successfully");
+      } catch (err) {
+        console.error("Failed to save blog:", err);
+      }
 
     } catch (error) {
       console.log(process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL);

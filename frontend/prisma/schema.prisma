@@ -14,3 +14,11 @@ model User {
   password  String
   createdAt DateTime @default(now())
 }
+
+model BlogThread {
+  threadID   String  @id @unique
+  username   String
+  result     String
+  url        String?
+  createTime DateTime @default(now())
+}

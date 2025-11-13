@@ -15,9 +15,6 @@ const ALL_CHANNELS: Modality[] = [
   { name: "facebook" },
   { name: "threads" },
   { name: "instagram" },
-  // Your original mock data had 'madGum' and 'drakeGo', include them here:
-  { name: "madGum" },
-  { name: "drakeGo" },
 ];
 
 
@@ -31,11 +28,13 @@ const BlogWorkflowPage: React.FC = () => {
       "",
     // 💡 FIX 1: The modalities state should be an array of names (strings) for easy API submission.
     modalities: [
-      "madGum", // Previously active
+      "medium", // Previously active
       "linkedin", // Adding a channel to start with
     ] as string[], // Now stores only the selected NAMES
     mediumWordCount: 600,
     linkedinWordCount: 200,
+    tone: "",
+    audience: "",
     threadId: "e.g. session-abc123",
   });
 
@@ -67,14 +66,15 @@ const BlogWorkflowPage: React.FC = () => {
         
         process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL + "/generate-blog",
         {
-          
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         }
       );
       const data = await res.json();
-      setResult(data.generated_blog);
+      console.log("Full JSON response from backend:", data); // 👈 log the entire JSON
+      setResult(data.generated_blog); // fallback if key doesn't exist
+
     } catch (error) {
       console.log(process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL);
       console.error("Error:", error);
@@ -132,18 +132,38 @@ const BlogWorkflowPage: React.FC = () => {
       />
 
       <InputCard title="Word Counts per Modality">
-        <WordCountInput
-          label="Medium word count"
-          value={formData.mediumWordCount}
-          onChange={(val) => handleChange("mediumWordCount", val)}
+        {formData.modalities.map((modality) => {
+        // Build the corresponding key dynamically
+        const key = `${modality}WordCount` as keyof typeof formData;
+        const value = typeof formData[key] === "number" ? (formData[key] as number) : 0;
+        return (
+          <WordCountInput
+          key={modality}
+          label={`${modality.charAt(0).toUpperCase() + modality.slice(1)} word count`}
+          value={value}
+          onChange={(val) => handleChange(key, val)}
         />
-        <WordCountInput
-          label="LinkedIn word count"
-          value={formData.linkedinWordCount}
-          onChange={(val) => handleChange("linkedinWordCount", val)}
+        );
+        })}
+      </InputCard>
+
+      <InputCard title="tone">
+        <TextInput
+          label=""
+          value={formData.tone}
+          onChange={(e) => handleChange("tone", e.target.value)}
+          placeholder="inquisitive"
         />
       </InputCard>
-      {/* ... rest of the form ... */}
+
+      <InputCard title="audience">
+        <TextInput
+          label=""
+          value={formData.audience}
+          onChange={(e) => handleChange("audience", e.target.value)}
+          placeholder="middle aged men"
+        />
+      </InputCard>
 
       <InputCard title="Thread ID (optional)">
         <TextInput

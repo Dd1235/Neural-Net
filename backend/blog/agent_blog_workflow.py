@@ -1,6 +1,6 @@
 from typing import Any, Dict
 from langgraph.graph import StateGraph
-from blog_workflow_model import BlogState, build_blog_graph
+from .blog_workflow_model import BlogState, build_blog_graph
 
 
 class BlogWorkflowAgent:

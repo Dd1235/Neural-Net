@@ -1,0 +1,7 @@
+transformers
+diffusers
+torch
+pydantic
+supabase
+accelerate
+fastapi[standard]

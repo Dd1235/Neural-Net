@@ -57,16 +57,16 @@ const NewsRoomWorkflowPage: React.FC = () => {
 
       // Save blog to DB (optional)
       try {
-        // await fetch("/api/save-news-article", {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({
-        //     threadId: tid,
-        //     result: format_blog,
-        //     url: "",
-        //   }),
-        //   credentials: "include",
-        // });
+        await fetch("/api/save-news-article", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            threadId: data.threadId,
+            result: data.generated_article,
+            url: "",
+          }),
+          credentials: "include",
+        });
         console.log("Saved blog to DB successfully");
       } catch (err) {
         console.error("Failed to save news-article:", err);

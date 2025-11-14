@@ -22,3 +22,11 @@ model BlogThread {
   url        String?
   createTime DateTime @default(now())
 }
+
+model NewsArticle {
+  threadID   String  @id @unique
+  username   String
+  result     String
+  url        String?
+  createTime DateTime @default(now())
+}

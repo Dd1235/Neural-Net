@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: "ping", label: "Ping", icon: Zap },
     { id: "health", label: "Health", icon: CheckCircle },
     { id: "agents", label: "Agents", icon: MessageSquare },
-    { id: "chat", label: "Chat", icon: MessageSquare },
+    { id: "youtube", label: "Youtube", icon: MessageSquare },
     { id: "content", label: "Content", icon: FileText },
     { id: "blog_workflow", label: "Blog Workflow", icon: FileText },
     { id: "newsroom", label: "Newsroom", icon: Newspaper },

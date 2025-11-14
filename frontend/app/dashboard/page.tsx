@@ -8,7 +8,7 @@ import BlogWorkflowPage from "../components/templates/BlogWorkflowPage";
 import NewsRoomWorkflowPage from "../components/templates/NewsRoomWorkflowpage";
 import PlaceholderPage from "../components/templates/PlaceholderPage";
 import ContentPage from "../components/templates/ContentPage";
-
+import YoutubeScriptPage from "../components/templates/YoutubeScriptPage";
 // -------------------
 // Auth Context
 // -------------------
@@ -60,6 +60,8 @@ const Dashboard: React.FC = () => {
         return <NewsRoomWorkflowPage />;
       case "content":
         return <ContentPage />;
+      case "youtube":
+        return <YoutubeScriptPage />;
       default:
         return <PlaceholderPage page={currentPage} />;
     }

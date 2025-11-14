@@ -52,23 +52,21 @@ const NewsRoomWorkflowPage: React.FC = () => {
       );
       const data = await res.json();
       console.log("Full JSON response from backend:", data);
-      const format_blog = data.generated_blog;
-      const tid = data.threadId;
       // const formattedBlog = data?.data?.formatted_blog ?? "⚠️ No content generated";
-      setResult(data.generated_blog);
+      setResult(data.generated_article);
 
       // Save blog to DB (optional)
       try {
-        await fetch("/api/save-news-article", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            threadId: tid,
-            result: format_blog,
-            url: "",
-          }),
-          credentials: "include",
-        });
+        // await fetch("/api/save-news-article", {
+        //   method: "POST",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify({
+        //     threadId: tid,
+        //     result: format_blog,
+        //     url: "",
+        //   }),
+        //   credentials: "include",
+        // });
         console.log("Saved blog to DB successfully");
       } catch (err) {
         console.error("Failed to save news-article:", err);

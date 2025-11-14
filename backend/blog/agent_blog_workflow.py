@@ -50,6 +50,7 @@ class BlogWorkflowAgent:
                 }
 
         except Exception as e:
+            print(f"Error in BlogWorkflowAgent: {e}")
             return {
                 "status": "error",
                 "message": str(e)

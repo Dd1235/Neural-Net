@@ -40,47 +40,62 @@ export default function SignUpForm({ setMessage }: SignUpFormProps) {
   };
 
   return (
-    <form onSubmit={handleSignUp}>
-      <h3 className="text-center mb-3">Sign Up</h3>
+    <form onSubmit={handleSignUp} className="auth-form">
+      <h3 className="form-title">Create account</h3>
+      <p className="form-subtitle">
+        Launch your first project in minutes. All you need is an email.
+      </p>
 
-      <div className="mb-3">
-        <label className="text-start d-block">Full Name</label>
+      <label htmlFor="signup-name" className="input-label">
+        Full Name
+      </label>
+      <div className="input-wrapper">
         <input
+          id="signup-name"
           type="text"
-          className="form-control"
-          placeholder="Enter name"
+          className="auth-input"
+          placeholder="Jane Doe"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          autoComplete="name"
           required
         />
       </div>
 
-      <div className="mb-3">
-        <label className="text-start d-block">Email address</label>
+      <label htmlFor="signup-email" className="input-label">
+        Email address
+      </label>
+      <div className="input-wrapper">
         <input
+          id="signup-email"
           type="email"
-          className="form-control"
-          placeholder="Enter email"
+          className="auth-input"
+          placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
           required
         />
       </div>
 
-      <div className="mb-3">
-        <label className="text-start d-block">Password</label>
+      <label htmlFor="signup-password" className="input-label">
+        Password
+      </label>
+      <div className="input-wrapper">
         <input
+          id="signup-password"
           type="password"
-          className="form-control"
-          placeholder="Enter password"
+          className="auth-input"
+          placeholder="Create a strong password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
           required
         />
       </div>
 
-      <button type="submit" className="btn btn-primary w-100">
-        Sign Up
+      <button type="submit" className="auth-button">
+        Create account
       </button>
     </form>
   );

@@ -32,6 +32,7 @@ const Dashboard: React.FC = () => {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState("home");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [user, setUser] = useState<any>(null); // Logged-in user info
 
   // Route protection & fetch user info
@@ -58,6 +59,10 @@ const Dashboard: React.FC = () => {
 
   const handleToggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
+  }, []);
+
+  const handleToggleCollapse = useCallback(() => {
+    setIsSidebarCollapsed((prev) => !prev);
   }, []);
 
   const renderPage = () => {
@@ -94,6 +99,8 @@ const Dashboard: React.FC = () => {
           onNavigate={handleNavigate}
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={handleToggleSidebar}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={handleToggleCollapse}
         />
         <main className="flex-1 overflow-y-auto pt-16 md:pt-0">
           <div className="w-full min-h-full">{renderPage()}</div>

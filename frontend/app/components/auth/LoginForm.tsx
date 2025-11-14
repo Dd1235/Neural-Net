@@ -11,7 +11,7 @@ export default function LoginForm({ setMessage }: LoginFormProps) {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  // ✅ since auth now lives inside /app/api/auth/route.ts, no need for external backend URL
+  //  since auth now lives inside /app/api/auth/route.ts, no need for external backend URL
   const loginHandle = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -38,32 +38,46 @@ export default function LoginForm({ setMessage }: LoginFormProps) {
   };
 
   return (
-    <form onSubmit={loginHandle}>
-      <h3 className="text-center mb-3">Sign In</h3>
-      <div className="mb-3">
-        <label className="text-start d-block">Email address</label>
+    <form onSubmit={loginHandle} className="auth-form">
+      <h3 className="form-title">Sign In</h3>
+      <p className="form-subtitle">
+        Welcome back! Enter your credentials to access your workspace.
+      </p>
+
+      <label htmlFor="login-email" className="input-label">
+        Email address
+      </label>
+      <div className="input-wrapper">
         <input
+          id="login-email"
           type="email"
-          className="form-control"
-          placeholder="Enter email"
+          className="auth-input"
+          placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
           required
         />
       </div>
-      <div className="mb-3">
-        <label className="text-start d-block">Password</label>
+
+      <label htmlFor="login-password" className="input-label">
+        Password
+      </label>
+      <div className="input-wrapper">
         <input
+          id="login-password"
           type="password"
-          className="form-control"
-          placeholder="Enter password"
+          className="auth-input"
+          placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
           required
         />
       </div>
-      <button type="submit" className="btn btn-primary w-100">
-        Sign In
+
+      <button type="submit" className="auth-button">
+        Continue
       </button>
     </form>
   );

@@ -4,7 +4,7 @@ import InputCard from "../generate/InputCard";
 import TextInput from "../generate/TextInput";
 import ModalitySelector, { Modality } from "../generate/ModalitySelector";
 import WordCountInput from "../generate/WordCountInput";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, Clipboard, Check } from "lucide-react";
 
 const ALL_CHANNELS: Modality[] = [
   { name: "medium" },
@@ -30,6 +30,7 @@ const BlogWorkflowPage: React.FC = () => {
 
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleChange = useCallback(
     (key: keyof typeof formData, value: string | number | string[]) => {
@@ -89,6 +90,29 @@ const BlogWorkflowPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Function to copy text to clipboard
+  const handleCopy = () => {
+    if (!result) return;
+
+    // Use document.execCommand for compatibility in restricted environments (like iframes)
+    const textArea = document.createElement("textarea");
+    textArea.value = result;
+    textArea.style.position = "absolute";
+    textArea.style.left = "-9999px"; // Move it off-screen
+    document.body.appendChild(textArea);
+
+    textArea.select();
+    try {
+      document.execCommand("copy");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Reset icon after 2 seconds
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+
+    document.body.removeChild(textArea);
   };
 
   return (
@@ -193,9 +217,30 @@ const BlogWorkflowPage: React.FC = () => {
       </div>
 
       {result && (
-        <div className="mt-10 bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-bold mb-3">Generated Blog Output:</h2>
-          <pre className="whitespace-pre-wrap text-gray-200">{result}</pre>
+        <div className="mt-10 bg-gray-800 rounded-xl shadow-lg relative">
+          {/* Header with Copy Button */}
+          <div className="flex justify-between items-center p-4 border-b border-gray-700">
+            <h2 className="text-xl font-bold">Generated Article:</h2>
+            <button
+              type="button" // Important: type="button" to prevent form submission
+              onClick={handleCopy}
+              className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors text-gray-200"
+              title="Copy to clipboard"
+            >
+              {copied ? (
+                <Check className="w-5 h-5 text-green-400" />
+              ) : (
+                <Clipboard className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+
+          {/* Article Content */}
+          <div className="p-6">
+            <pre className="whitespace-pre-wrap text-gray-200 font-sans">
+              {result}
+            </pre>
+          </div>
         </div>
       )}
     </form>

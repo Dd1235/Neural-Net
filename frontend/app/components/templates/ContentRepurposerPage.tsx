@@ -204,7 +204,7 @@ const FileUploader: React.FC<{
         <button
           type="button"
           onClick={onClear}
-          className="p-1 text-gray-400 hover:text-white flex-shrink-0"
+          className="p-1 text-gray-400 hover:text-white flex shrink-0"
         >
           <RotateCcw className="w-5 h-5" />
         </button>

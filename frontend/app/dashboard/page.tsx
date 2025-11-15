@@ -11,11 +11,15 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../components/dashboard/Sidebar";
 import Header from "../components/generate/Header";
 import BlogWorkflowPage from "../components/templates/BlogWorkflowPage";
+import GeneratedImagesPage from "../components/templates/GeneratedImagesPage";
 import NewsRoomWorkflowPage from "../components/templates/NewsRoomWorkflowpage";
 import PlaceholderPage from "../components/templates/PlaceholderPage";
 import ContentPage from "../components/templates/ContentPage";
 import YoutubeScriptPage from "../components/templates/YoutubeScriptPage";
 import ContentRepurposerPage from "../components/templates/ContentRepurposerPage";
+import YouTubeBlogPage from "../components/templates/YouTubeBlogPage";
+import HomePage from "../components/templates/HomePage";
+import VisualPostGeneratorPage from "../components/templates/VisualPostGeneratorPage";
 
 // -------------------
 // Auth Context
@@ -29,8 +33,9 @@ export const useAuth = () => useContext(AuthContext);
 // -------------------
 const Dashboard: React.FC = () => {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState("blog");
+  const [currentPage, setCurrentPage] = useState("home");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [user, setUser] = useState<any>(null); // Logged-in user info
 
   // Route protection & fetch user info
@@ -59,8 +64,14 @@ const Dashboard: React.FC = () => {
     setIsSidebarOpen((prev) => !prev);
   }, []);
 
+  const handleToggleCollapse = useCallback(() => {
+    setIsSidebarCollapsed((prev) => !prev);
+  }, []);
+
   const renderPage = () => {
     switch (currentPage) {
+      case "home":
+        return <HomePage />;
       case "blog":
         return <BlogWorkflowPage />; // user can be accessed via AuthContext
       case "newsroom":
@@ -70,6 +81,12 @@ const Dashboard: React.FC = () => {
       case "youtube":
         return <YoutubeScriptPage />;
         return <ContentRepurposerPage />;
+      case "image_library":
+        return <GeneratedImagesPage />;
+      case "youtube_blog":
+        return <YouTubeBlogPage />;
+      case "visual_post":
+        return <VisualPostGeneratorPage />;
       default:
         return <PlaceholderPage page={currentPage} />;
     }
@@ -90,6 +107,8 @@ const Dashboard: React.FC = () => {
           onNavigate={handleNavigate}
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={handleToggleSidebar}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={handleToggleCollapse}
         />
         <main className="flex-1 overflow-y-auto pt-16 md:pt-0">
           <div className="w-full min-h-full">{renderPage()}</div>

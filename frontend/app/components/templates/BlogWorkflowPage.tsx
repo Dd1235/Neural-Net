@@ -4,7 +4,14 @@ import InputCard from "../generate/InputCard";
 import TextInput from "../generate/TextInput";
 import ModalitySelector, { Modality } from "../generate/ModalitySelector";
 import WordCountInput from "../generate/WordCountInput";
-import { Lightbulb, Clipboard, Check } from "lucide-react";
+import {
+  Lightbulb,
+  Clipboard,
+  Check,
+  Download,
+  Image as ImageIcon,
+  Loader2,
+} from "lucide-react";
 
 const ALL_CHANNELS: Modality[] = [
   { name: "medium" },
@@ -14,6 +21,16 @@ const ALL_CHANNELS: Modality[] = [
   { name: "threads" },
   { name: "instagram" },
 ];
+
+const IMAGE_ENDPOINT =
+  process.env.NEXT_PUBLIC_IMAGE_GENERATION ||
+  "https://dd1235--nn-image-imagegenserver-generate-image.modal.run";
+
+interface ImageResult {
+  url: string;
+  fileKey: string;
+  prompt: string;
+}
 
 const BlogWorkflowPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -31,6 +48,10 @@ const BlogWorkflowPage: React.FC = () => {
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [imagePromptLoading, setImagePromptLoading] = useState(false);
+  const [imageResult, setImageResult] = useState<ImageResult | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const handleChange = useCallback(
     (key: keyof typeof formData, value: string | number | string[]) => {
@@ -46,10 +67,119 @@ const BlogWorkflowPage: React.FC = () => {
     }));
   }, []);
 
+  const autoGenerateImagePrompt = useCallback(async () => {
+    setImagePromptLoading(true);
+    setImageError(null);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL;
+      if (!backendUrl) {
+        throw new Error("Python backend URL is not configured.");
+      }
+      const res = await fetch(`${backendUrl}/image-prompt`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brand_voice: formData.brandVoice,
+          prompt: formData.prompt,
+          existing_draft: formData.existingDraft,
+          tone: formData.tone,
+          audience: formData.audience,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`Prompt helper failed (${res.status})`);
+      }
+      const data = await res.json();
+      const promptText = data.image_prompt || data.prompt;
+      if (!promptText) {
+        throw new Error("No prompt returned by helper.");
+      }
+      setImagePrompt(promptText);
+    } catch (err: any) {
+      console.error("Image prompt helper error:", err);
+      setImageError(
+        err?.message || "Failed to craft image prompt from your content."
+      );
+    } finally {
+      setImagePromptLoading(false);
+    }
+  }, [
+    formData.brandVoice,
+    formData.prompt,
+    formData.existingDraft,
+    formData.tone,
+    formData.audience,
+  ]);
+
+  const generateImageFromPrompt = useCallback(
+    async (promptText: string) => {
+      if (!promptText.trim()) return null;
+
+      try {
+        const response = await fetch(IMAGE_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: promptText }),
+        });
+
+        if (!response.ok) {
+          const message = await response.text();
+          throw new Error(message || `Image API error (${response.status})`);
+        }
+
+        const payload = await response.json();
+        const fileKey = payload.file_key || payload.fileKey || "";
+        const publicUrl = payload.public_url || payload.publicUrl;
+
+        if (!publicUrl) {
+          throw new Error("Image service did not return a public URL.");
+        }
+
+        try {
+          const saveRes = await fetch("/api/generated-images", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              prompt: promptText,
+              fileKey,
+              imageUrl: publicUrl,
+            }),
+          });
+
+          if (!saveRes.ok && saveRes.status === 401) {
+            setImageError("Login required to store generated images.");
+          }
+        } catch (saveErr) {
+          console.error("Failed to save generated image:", saveErr);
+        }
+
+        return {
+          url: publicUrl,
+          fileKey,
+          prompt: promptText,
+        };
+      } catch (err: any) {
+        console.error("Image generation error:", err);
+        setImageError(
+          err?.message || "Failed to generate image from the provided prompt."
+        );
+        return null;
+      }
+    },
+    []
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setResult(null);
+    setImageResult(null);
+    setImageError(null);
+
+    const imagePromise = imagePrompt.trim()
+      ? generateImageFromPrompt(imagePrompt.trim())
+      : Promise.resolve(null);
 
     try {
       // Call backend to generate blog
@@ -84,9 +214,15 @@ const BlogWorkflowPage: React.FC = () => {
       } catch (err) {
         console.error("Failed to save blog:", err);
       }
+
+      const generatedImage = await imagePromise;
+      if (generatedImage) {
+        setImageResult(generatedImage);
+      }
     } catch (error) {
       console.error("Error connecting to backend:", error);
       setResult("⚠️ Failed to connect to backend");
+      await imagePromise;
     } finally {
       setLoading(false);
     }
@@ -152,6 +288,44 @@ const BlogWorkflowPage: React.FC = () => {
           onChange={(e) => handleChange("existingDraft", e.target.value)}
           isTextArea
         />
+      </InputCard>
+
+      <InputCard title="Image Prompt">
+        <div className="space-y-3">
+          <TextInput
+            label="Describe the hero image you'd like the SDXL model to create."
+            value={imagePrompt}
+            onChange={(e) => setImagePrompt(e.target.value)}
+            isTextArea
+            placeholder="e.g. Ultra-detailed cinematic shot of..."
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={autoGenerateImagePrompt}
+              disabled={imagePromptLoading || loading}
+              className="inline-flex items-center px-4 py-2 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 transition disabled:opacity-60"
+            >
+              {imagePromptLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Crafting prompt...
+                </>
+              ) : (
+                <>
+                  <Lightbulb className="w-4 h-4 mr-2" />
+                  Suggest from brief
+                </>
+              )}
+            </button>
+            <p className="text-xs text-gray-400">
+              The lightbulb uses your brand voice + content brief to craft an SDXL-ready prompt.
+            </p>
+          </div>
+          {imageError && (
+            <p className="text-xs text-red-300">{imageError}</p>
+          )}
+        </div>
       </InputCard>
 
       <ModalitySelector
@@ -243,6 +417,40 @@ const BlogWorkflowPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {imageResult && (
+        <div className="mt-8 bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-red-400" />
+                Generated Image
+              </h3>
+              <p className="text-sm text-gray-400">
+                Prompt: <span className="text-gray-200">{imageResult.prompt}</span>
+              </p>
+            </div>
+            <a
+              href={imageResult.url}
+              download
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download
+            </a>
+          </div>
+          <div className="bg-black/40 rounded-lg overflow-hidden border border-gray-700">
+            <img
+              src={imageResult.url}
+              alt="Generated visual asset"
+              className="w-full h-auto object-cover"
+            />
+          </div>
+        </div>
+      )}
+
     </form>
   );
 };

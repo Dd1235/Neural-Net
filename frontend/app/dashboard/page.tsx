@@ -22,6 +22,7 @@ import HomePage from "../components/templates/HomePage";
 import VisualPostGeneratorPage from "../components/templates/VisualPostGeneratorPage";
 import XPostWorkflowPage from "../components/templates/XPostWorkflowPage";
 import AccountSettingsPage from "../components/templates/AccountSettingsPage";
+import TextToAudioPage from "../components/templates/TextToAudioPage";
 
 // -------------------
 // Auth Context
@@ -107,6 +108,8 @@ const Dashboard: React.FC = () => {
         return <VisualPostGeneratorPage />;
       case "x_post":
         return <XPostWorkflowPage currentUser={user} />;
+      case "text_audio":
+        return <TextToAudioPage />;
       case "account":
         return (
           <AccountSettingsPage

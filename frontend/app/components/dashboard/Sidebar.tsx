@@ -15,6 +15,7 @@ import {
   PanelRight,
   PenSquare,
   UserCog,
+  AudioLines,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -44,6 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: "image_library", label: "Image Library", icon: ImageIcon },
     { id: "visual_post", label: "Visual Post Caption", icon: ImageIcon },
     { id: "x_post", label: "X Post Studio", icon: PenSquare },
+    { id: "text_audio", label: "Text to Audio", icon: AudioLines },
     { id: "account", label: "Account & Keys", icon: UserCog },
   ];
 

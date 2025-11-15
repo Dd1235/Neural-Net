@@ -107,10 +107,17 @@ const VisualPostGeneratorPage: React.FC = () => {
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false); // <-- 1. Added drag state
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // --- 2. Created a reusable function to handle the file ---
+  const handleFile = async (file: File | undefined) => {
     if (!file) return;
+
+    // Check file type
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      setError("Unsupported file type. Please use PNG, JPEG, or WEBP.");
+      return;
+    }
 
     // Reset state
     setResult(null);
@@ -127,6 +134,35 @@ const VisualPostGeneratorPage: React.FC = () => {
     }
   };
 
+  // This handler is for the <input type="file">
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFile(e.target.files?.[0]);
+  };
+
+  // --- 3. Added drag-and-drop handlers ---
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Set state based on event type
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragOver(true);
+    } else if (e.type === "dragleave") {
+      setDragOver(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false); // Reset drag state
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleFile(file); // Use the same file handling logic
+    }
+  };
+
+  // --- (handleSubmit is unchanged) ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!imageBase64 || !context) {
@@ -180,9 +216,18 @@ const VisualPostGeneratorPage: React.FC = () => {
           accept="image/png, image/jpeg, image/webp"
           onChange={handleFileChange}
         />
+        {/* --- 4. Added event handlers and dynamic styling to the label --- */}
         <label
           htmlFor="image-upload"
-          className="w-full h-64 bg-gray-900 rounded-lg border-2 border-dashed border-gray-600 cursor-pointer flex flex-col items-center justify-center text-gray-400 hover:bg-gray-700 hover:border-gray-500 transition-colors"
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+          className={`w-full h-64 bg-gray-900 rounded-lg border-2 border-dashed cursor-pointer flex flex-col items-center justify-center text-gray-400 transition-colors ${
+            dragOver
+              ? "border-red-500 bg-gray-700" // Style when dragging over
+              : "border-gray-600 hover:bg-gray-700 hover:border-gray-500"
+          }`}
         >
           {imagePreview ? (
             <img

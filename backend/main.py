@@ -4,6 +4,7 @@ from blog.router import router as blog_router
 from news.router import router as news_router
 from content.router import router as content_router
 from contentRepurposer.router import router as contentRepurposer_router
+from youtube.router import router as youtube_route
 from youtubeBlog.router import router as youtube_router
 from health.router import router as health_router
 from visualPostGenerator.router import router as caption_router
@@ -35,4 +36,5 @@ app.include_router(contentRepurposer_router)
 app.include_router(youtube_router)
 app.include_router(health_router)
 app.include_router(caption_router)
+app.include_router(youtube_route)
 

@@ -12,6 +12,17 @@ Also SDXL uses plenty VRAM already.
 
 Also, we are caching the models so there is a cache volume, no loading everytime a new container spins up.
 
+Using supabase object storage.
+
+Trying parler tts, https://github.com/huggingface/parler-tts/blob/main/INFERENCE.md , apparently flash attention and all is supported so I should look into those later.
+
+TTS works on CPU but GPU is much faster so going with that.
+
+I am just deploying it on its own server, instead of comining with image generation server.
+I think it will give better performance cold start wise, and concurrently serving both image generation and tts on same gpu instance might be tricky.
+
+Need to look into this actually, because I am not sure how hte difference is in serverless. Getting better fault tolerance by separating them is good too.
+
 ## Dev Usage Guide: **1. Put the backend URL in `.env`:**
 
 ```env

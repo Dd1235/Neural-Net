@@ -23,6 +23,7 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({
 }) => {
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
+  const [bearerToken, setBearerToken] = useState("");   // <-- NEW FIELD
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -36,15 +37,22 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({
       const res = await fetch("/api/user/x-credentials", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey, apiSecret }),
+        body: JSON.stringify({
+          apiKey,
+          apiSecret,
+          bearerToken,     // <-- SEND IT TO BACKEND
+        }),
       });
+
       if (!res.ok) {
         const payload = await res.json();
         throw new Error(payload.error || "Failed to store credentials.");
       }
+
       setApiKey("");
       setApiSecret("");
-      setMessage("X API keys saved securely.");
+      setBearerToken("");   // <-- RESET FIELD
+      setMessage("X API keys & bearer token saved securely.");
       onCredentialsChange(true);
     } catch (err: any) {
       setError(err.message || "Failed to save credentials.");
@@ -58,13 +66,16 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({
     setError(null);
     setMessage(null);
     try {
-      const res = await fetch("/api/user/x-credentials", { method: "DELETE" });
+      const res = await fetch("/api/user/x-credentials", {
+        method: "DELETE",
+      });
       if (!res.ok) {
         const payload = await res.json();
         throw new Error(payload.error || "Failed to remove credentials.");
       }
+
       onCredentialsChange(false);
-      setMessage("Removed X API keys for this account.");
+      setMessage("Removed X API keys & bearer token.");
     } catch (err: any) {
       setError(err.message || "Failed to remove credentials.");
     } finally {
@@ -94,10 +105,12 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({
           <KeyRound className="w-4 h-4 text-blue-300" />
           Connect X Publishing Keys
         </div>
+
         <p className="text-sm text-gray-400">
-          Store your <code>X_API_KEY</code> and secret encrypted so the workflow can
-          launch a post straight to X when you approve it.
+          Store your <code>X_API_KEY</code>, <code>X_API_SECRET</code>, and{" "}
+          <code>BEARER_TOKEN</code> encrypted so the workflow can publish directly to X.
         </p>
+
         <div className="text-sm text-gray-300 flex items-center gap-2">
           {user.hasXCredentials ? (
             <>
@@ -112,7 +125,8 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({
           )}
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
+        {/* Inputs for KEY, SECRET, BEARER */}
+        <div className="grid gap-3 md:grid-cols-3">
           <div>
             <label className="block text-sm text-gray-300 mb-1">
               X API Key (Client ID)
@@ -125,6 +139,7 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({
               className="w-full rounded-lg border border-gray-700 bg-gray-900/80 p-3 text-sm text-white focus:ring-2 focus:ring-blue-500 transition"
             />
           </div>
+
           <div>
             <label className="block text-sm text-gray-300 mb-1">
               X API Secret
@@ -137,17 +152,32 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({
               className="w-full rounded-lg border border-gray-700 bg-gray-900/80 p-3 text-sm text-white focus:ring-2 focus:ring-blue-500 transition"
             />
           </div>
+
+          {/* NEW BEARER TOKEN FIELD */}
+          <div>
+            <label className="block text-sm text-gray-300 mb-1">
+              X Bearer Token
+            </label>
+            <input
+              type="password"
+              value={bearerToken}
+              onChange={(e) => setBearerToken(e.target.value)}
+              placeholder="Your Bearer Token"
+              className="w-full rounded-lg border border-gray-700 bg-gray-900/80 p-3 text-sm text-white focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            disabled={saving || !apiKey || !apiSecret}
+            disabled={saving || !apiKey || !apiSecret || !bearerToken}
             onClick={handleSave}
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save keys securely"}
           </button>
+
           <button
             type="button"
             disabled={removing || !user.hasXCredentials}

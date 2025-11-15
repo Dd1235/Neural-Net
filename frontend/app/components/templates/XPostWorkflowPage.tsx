@@ -172,7 +172,10 @@ const defaultForm = {
 };
 
 interface XPostWorkflowPageProps {
-  currentUser: { hasXCredentials?: boolean } | null;
+  currentUser: {
+    hasXCredentials?: boolean;
+    bearerToken?: string; // <-- ADD THIS
+  } | null;
 }
 
 const XPostWorkflowPage: React.FC<XPostWorkflowPageProps> = ({ currentUser }) => {
@@ -360,7 +363,7 @@ const XPostWorkflowPage: React.FC<XPostWorkflowPageProps> = ({ currentUser }) =>
     try {
       const res = await fetch("/api/x/post", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${currentUser?.bearerToken}`},
         body: JSON.stringify({ text: finalPost }),
       });
       const payload = await res.json();

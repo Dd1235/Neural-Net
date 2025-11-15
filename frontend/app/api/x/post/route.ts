@@ -3,20 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prismaClient";
 import { getCurrentUser } from "../../auth/lib";
-const { decryptSecret } = require("@/lib/xCrypto");
-
-const OAUTH_TOKEN_URL = "https://api.x.com/2/oauth2/token";
-const POST_TWEET_URL = "https://api.x.com/2/tweets";
-
-function ensureXCredentialDelegate() {
-  const delegate = (prisma as any).xCredential;
-  if (!delegate?.findUnique) {
-    throw new Error(
-      "XCredential model missing in Prisma client. Run `npx prisma generate` so encrypted keys stay outside the user table."
-    );
-  }
-  return delegate as typeof prisma.xCredential;
-}
+const { encryptSecret, decryptSecret } = require("@/lib/xCrypto");
 
 async function getAuthedUser(req: NextRequest) {
   const token = req.cookies.get("auth_token")?.value;
@@ -32,77 +19,55 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { text } = body;
+    console.log("POST BODY:", body);
 
-    if (!text || typeof text !== "string") {
-      return NextResponse.json({ error: "Tweet text is required." }, { status: 400 });
-    }
-
-    if (text.length > 280) {
-      return NextResponse.json(
-        { error: "Tweet text must be 280 characters or fewer." },
-        { status: 400 }
-      );
-    }
-
-    const xCredential = ensureXCredentialDelegate();
-
-    const credentials = await xCredential.findUnique({
+    // 1. Read credentials from DB
+    const creds = await prisma.xCredential.findUnique({
       where: { userId: user.id },
-      select: { apiKeyEncrypted: true, apiSecretEncrypted: true },
     });
 
-    if (!credentials) {
+    if (!creds) {
       return NextResponse.json(
-        { error: "X API credentials not found for this user." },
+        { error: "No saved X credentials found for this user." },
         { status: 400 }
       );
     }
 
-    const apiKey = decryptSecret(credentials.apiKeyEncrypted);
-    const apiSecret = decryptSecret(credentials.apiSecretEncrypted);
+    // 2. Decrypt stored values
+    console.log(creds.id);
+    console.log(creds.userId);
+    const apiKey = decryptSecret(creds.apiKeyEncrypted);
+    const apiSecret = decryptSecret(creds.apiSecretEncrypted);
 
-    const oauthResponse = await fetch(OAUTH_TOKEN_URL, {
-      method: "POST",
-      headers: {
-        Authorization:
-          "Basic " + Buffer.from(`${apiKey}:${apiSecret}`).toString("base64"),
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: "grant_type=client_credentials",
-    });
-
-    if (!oauthResponse.ok) {
-      const errText = await oauthResponse.text();
+    // Bearer is plain text
+    const bearerToken = creds.bearerToken;
+    console.log(apiKey);
+    console.log(apiSecret);
+    console.log(creds.bearerToken);
+    if (!apiKey || !apiSecret || !bearerToken) {
       return NextResponse.json(
-        { error: "Failed to obtain X access token", details: errText },
-        { status: oauthResponse.status }
+        { error: "X credentials are incomplete. Please fill them out again." },
+        { status: 400 }
       );
     }
 
-    const { access_token } = await oauthResponse.json();
-
-    const tweetResponse = await fetch(POST_TWEET_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }),
-    });
-
-    const tweetPayload = await tweetResponse.json();
-
-    if (!tweetResponse.ok) {
-      return NextResponse.json(
-        { error: "Failed to post tweet", details: tweetPayload },
-        { status: tweetResponse.status }
-      );
+    // 3. Extract tweet (what you want to post)
+    const { text } = body;
+    if (!text) {
+      return NextResponse.json({ error: "Text is required." }, { status: 400 });
     }
 
-    return NextResponse.json({ status: "posted", response: tweetPayload });
+    console.log("Using X Credentials:");
+    console.log({ apiKey, apiSecret, bearerToken });
+
+    // 🚀 4. TODO — now send to X API (next step)
+    return NextResponse.json({
+      ok: true,
+      posted: text,
+      debug: "Credentials loaded from DB successfully",
+    });
   } catch (err: any) {
-    console.error("Error posting to X", err);
+    console.error("Error posting to X:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

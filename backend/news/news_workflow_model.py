@@ -2,7 +2,7 @@ from typing import Dict, Any
 from langgraph.graph import StateGraph, START, END
 from pydantic import BaseModel, Field
 from groq import Groq
-from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_tavily import TavilySearch
 from dotenv import load_dotenv
 import os
 
@@ -17,7 +17,7 @@ research_client = Groq()  # Smaller agent for research (llama-3.1-8b-instant)
 # --- Initialize Tavily Search Tool ---
 if not os.environ.get("TAVILY_API_KEY"):
     print("WARN: TAVILY_API_KEY not set. Web research will fail.")
-search_tool = TavilySearchResults(max_results=5)
+search_tool = TavilySearch(max_results=5)
 
 def generate(prompt: str, max_tokens=512, temperature=0.7) -> str:
     """Use Groq API to generate text from prompt."""

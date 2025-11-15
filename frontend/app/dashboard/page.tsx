@@ -14,6 +14,8 @@ import BlogWorkflowPage from "../components/templates/BlogWorkflowPage";
 import GeneratedImagesPage from "../components/templates/GeneratedImagesPage";
 import NewsRoomWorkflowPage from "../components/templates/NewsRoomWorkflowpage";
 import PlaceholderPage from "../components/templates/PlaceholderPage";
+import ContentPage from "../components/templates/ContentPage";
+import YoutubeScriptPage from "../components/templates/YoutubeScriptPage";
 import ContentRepurposerPage from "../components/templates/ContentRepurposerPage";
 import YouTubeBlogPage from "../components/templates/YouTubeBlogPage";
 import HomePage from "../components/templates/HomePage";
@@ -94,7 +96,9 @@ const Dashboard: React.FC = () => {
       case "newsroom":
         return <NewsRoomWorkflowPage />;
       case "content":
-        return <ContentRepurposerPage />;
+        return <ContentPage />;
+      case "youtube_script":
+        return <YoutubeScriptPage />;
       case "image_library":
         return <GeneratedImagesPage />;
       case "youtube_blog":

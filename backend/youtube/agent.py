@@ -5,7 +5,7 @@ from typing import Any, Dict
 from groq import Groq
 from pydantic import BaseModel, Field, HttpUrl
 
-from .transcript_service import (
+from backend.youtubeBlog.transcript_service import (
     extract_video_id,
     fetch_transcript,
     get_video_metadata,

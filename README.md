@@ -4,6 +4,66 @@ Built for Neural Net
 
 It is a full-stack automation environment for research, writing, design, and publishing. A Next.js 16 dashboard fronts a FastAPI service that hosts LangGraph-driven agents, Groq models, Tavily research tools, and self-hosted Modal workers. Every workflow except the final "publish to X" call is executed inside this stack.
 
+Refer to the imagemodel branch for the self hosted models.
+
+## Screenshots
+
+Our landing page
+
+![Landing Page](./assets/ss1.png)
+
+Then login/signup
+
+![Login Page](./assets/ss2.png)
+
+Dashboard home
+
+![Dashboard Home](./assets/ss3.png)
+
+Blog workflow page, describe brand voice and prompt, existing draft, audience etc.
+
+![Blog Workflow](./assets/ss4.png)
+
+This info generates a prompt for the sdxl turbo model to generate image for the blog
+![Image prompt](./assets/ss5.png)
+
+Output is the blog text of all modalities and the image.
+![Blog Output](./assets/ss6.png)
+
+Newsroom is similar, equipped with tavily search for the web access layer to generate current events articles.
+
+Similar with youtube script with thumbnail generation. They all differ in the system prompots and the langgraph structure.
+
+X post studio, uses Google Trends to generate ideas based on recent trends. It finds the keywords, and ideas are generated. Then the actual X post maker, you can enter your own post info or directly use the keywords from google trends idea generator.
+
+It is equipped with iterations of generator, evaluator and optimizer to refine the post until it reaches the desired score. Human feedback can also be injected to guide the optimization, but has to be upfront.
+
+![X Post Studio](./assets/ss7.png)
+
+Let's use the remote work post.
+
+![X Post Studio 2](./assets/ss8.png)
+
+Loop control and human feedback injection.
+![X Post Studio 3](./assets/ss9.png)
+
+![X Post Studio 4](./assets/ss10.png)
+![X Post Output](./assets/ss11.png)
+
+Youtube article generator, can be used by news channels to convert their videos into news articles or by youtubers to generate linkedin posts, blogs(say technical writing blogs from coding videos), instagram posts etc.
+
+![Youtube Blog](./assets/ss12.png)
+![Youtube Blog Output](./assets/ss13.png)
+
+Turn any of the content generated till now or any other content into voiceovers! Self hosteing parler TTS model.
+![Text to Audio](./assets/s14.png)
+
+You can access all your previous generated voiceovers here. Retrived from object storage.
+
+![Text to Audio Output](./assets/s15.png)
+
+![generated images](./assets/s16.png)
+
 ## System Highlights
 
 - LangGraph-powered agents for blog creation, newsroom copy, YouTube scripts, multimodal social posts, and content repurposing.

@@ -285,10 +285,14 @@ flowchart TD
    cd ../frontend && npm install
    ```
 2. **Environment variables** – Duplicate `frontend/.env` and `backend/.env`, replace secrets with your own:
+
    - `DATABASE_URL` (Neon), `AUTH_SECRET`, `GROQ_API_KEY`, `TAVILY_API_KEY`, `HF_API_TOKEN`.
    - Modal endpoints: `NEXT_PUBLIC_IMAGE_GENERATION`, `MODAL_VISION_ENDPOINT` (update constant or export), `TTS_ENDPOINT`.
    - Supabase bucket credentials live in the Modal workers; only `fileKey/Url` reach this repo.
    - `X_CREDENTIAL_SECRET` for AES-256-GCM.
+
+   In both `frontend/` and `backend/` `.env.example` files exist, please add your own API keys for the respective fields and rename both to `.env`
+
 3. **Prisma + database**
    ```bash
    cd frontend
@@ -299,13 +303,41 @@ flowchart TD
 
    ```bash
    # Terminal 1 – FastAPI
-   cd backend && uvicorn main:app --reload --port 4000
+   cd backend && uvicorn main:app --reload --port 8000
 
    # Terminal 2 – Next.js dashboard
    cd frontend && npm run dev
    ```
 
 5. **Modal workers** – Deploy/update the three Modal apps (vision, SDXL image, TTS). Ensure they write binary payloads to Supabase and expose authenticated HTTPS endpoints referenced by the env vars above.
+
+## Testing
+
+- **Runner + libs:** Jest with `jest-environment-jsdom`, React Testing Library (`@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`), and `whatwg-fetch` to polyfill `fetch`. `frontend/jest.config.js` wraps Next’s defaults via `next/jest`, applies `@/*` path aliases, and ignores `.next/` + `node_modules/`. `frontend/jest.setup.ts` seeds env vars and extends matchers.
+- **Commands:** From `frontend/` run `npm test` for a single pass, or `npm test -- --watch` to iterate. Console output is the primary reporter.
+- **What we test (functionality, not model quality):**
+  - `frontend/__tests__/blogWorkflow.test.tsx`: submits brand voice + prompt, stubs `/generate-blog` + `/api/save-blog`, asserts article render; image prompt path skipped while image credits are paused.
+  - `frontend/__tests__/youtubeBlogPage.test.tsx`: posts URL + brief to `/youtube-blog`, checks payload and rendered metadata/summary/blog.
+  - `frontend/__tests__/contentRepurposerPage.test.tsx`: simulates Mammoth script load, posts pasted text to `/repurpose-article`, and verifies summary + social tab content.
+  - `frontend/__tests__/xPostWorkflowPage.test.tsx`: fills brief/controls, hits `/x-post/generate`, asserts final post and payload fields (keywords, word/iteration limits, human feedback).
+- **Mocking pattern:** Each suite overrides `global.fetch` and inspects payloads to ensure wiring is correct:
+  ```ts
+  global.fetch = jest.fn((url, options) => {
+    if (String(url).includes("/generate-blog")) {
+      return Promise.resolve({ ok: true, json: async () => ({ generated_blog: "Result", threadId: "t1" }) });
+    }
+    return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+  }) as unknown as typeof fetch;
+
+  render(<BlogWorkflowPage />);
+  await userEvent.type(screen.getByPlaceholderText(/What should/), "Write a launch blog");
+  await userEvent.click(screen.getByRole("button", { name: /generate blog assets/i }));
+  await screen.findByText("Result");
+  ```
+- **Explicit gap:** LLM/VLM output quality is not evaluated here; tests validate UI + request plumbing. Image-generation prompts are not executed because hosted model credits are exhausted—they mirror the LLM request pattern and can be enabled once credits refresh.
+- Image-generation prompts are not exercised because hosted model credits are exhausted; functionality mirrors other LLM calls and will be picked up once credits refresh.
+
+![testing](./assets/s17.png)
 
 ## Operational Notes
 

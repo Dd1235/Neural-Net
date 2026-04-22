@@ -1,6 +1,6 @@
 # Neural-Net – Multi-Agent Content Creation & Automation
 
-Built for Neural Net
+Built for Neural Net - Won First Place in IIITB's flagship techfest hackathon.
 
 It is a full-stack automation environment for research, writing, design, and publishing. A Next.js 16 dashboard fronts a FastAPI service that hosts LangGraph-driven agents, Groq models, Tavily research tools, and self-hosted Modal workers. Every workflow except the final "publish to X" call is executed inside this stack.
 
